@@ -1,176 +1,29 @@
-#define _CRT_SECURE_NO_WARNINGS
-#define _USE_MATH_DEFINES
-#include <stdio.h>
-#include <math.h>
-#include <locale.h>
-#include <stdlib.h>
-#include "array.h"
 
-double* full_elements(double* a, int n) {
-    double x, dx;
-    printf("x dx: ");
-    scanf("%lf %lf", &x, &dx);
-    for (int i = 0; i < n; i++) {
-        a[i] = x * x + 2 * M_PI * cos(x);
-        x += dx;
-    }
-    return a;
-}
+#ifndef ARRAY_H
+#define ARRAY_H
 
-int put_elements(double* a, int n) {
-    for (int i = 0; i < n; i++) printf("%.2f ", a[i]);
-    printf("\n");
-    return 0;
-}
+// 1 Заполнение
+double* full_elements(double* a, int n);
 
-double sum_elements(double* a, int b, int e) {
-    double s = 0;
-    for (int i = b; i <= e; i++) s += a[i];
-    return s;
-}
+// 2 Печать
+int put_elements(double* a, int n);
 
-int find_element(double* a, int n, double v) {
-    for (int i = 0; i < n; i++)
-        if (fabs(a[i] - v) < 0.001) return i;
-    return -1;
-}
+// 3 Сумма
+double sum_elements(double* a, int b, int e);
 
-double* calc_elements(double* a, int n) {
-    for (int i = 0; i < n; i++) a[i] = ceil(a[i]);
-    return a;
-}
+// 4 Поиск
+int find_element(double* a, int n, double v);
 
-double find_max_position_type(double* a, int n, int t) {
-    double max;
-    int got = 0;
-    for (int i = 0; i < n; i++) {
-        if ((t == 0 && i % 2 == 0) || (t == 1 && i % 2 == 1)) {
-            if (!got || a[i] > max) max = a[i], got = 1;
-        }
-    }
-    return got ? max : 0;
-}
+// 5 Округление вверх
+double* calc_elements(double* a, int n);
 
-int delete_every_kth(double* a, int n, int k) {
-    if (k <= 0) return n;
-    int new_index = 0, count = 1;
-    for (int i = 0; i < n; i++) {
-        if (count % k != 0) a[new_index++] = a[i];
-        count++;
-    }
-    return new_index;
-}
+// 6 чет нечет
+double find_max_position_type(double* a, int n, int t);
 
-double* insert_after_every_kth(double* a, int* n, int k) {
-    if (k <= 0) return a;
+// Удаление каждого k-го элемента
+int delete_every_kth(double* a, int n, int k);
 
-    int insert_count = 0;
-    for (int i = 1; i <= *n; i++) {
-        if (i % k == 0) insert_count++;
-    }
+// Вставка -999 после каждого k-го элемента
+double* insert_after_every_kth(double* a, int* n, int k);
 
-    int new_n = *n + insert_count;
-    double* new_a = (double*)realloc(a, new_n * sizeof(double));
-    if (!new_a) return a;
-
-    int new_index = new_n - 1;
-    int old_index = *n - 1;
-    int count = *n;
-
-    while (old_index >= 0) {
-        new_a[new_index--] = new_a[old_index--];
-        if (count % k == 0 && count > 0) {
-            new_a[new_index--] = -999.0;
-        }
-        count--;
-    }
-
-    *n = new_n;
-    return new_a;
-}
-
-int main() {
-    setlocale(LC_ALL, "Russian");
-    double* a = NULL;
-    int n, k;
-
-    printf("n: ");
-    scanf("%d", &n);
-
-    if (n > N) {
-        printf("Превышен максимальный размер %d\n", N);
-        return -1;
-    }
-
-    a = (double*)malloc(n * sizeof(double));
-    if (!a) return -1;
-
-    full_elements(a, n);
-    printf("Исходный: ");
-    put_elements(a, n);
-
-    int b, e;
-    printf("от до: ");
-    scanf("%d %d", &b, &e);
-    printf("Сумма: %.2f\n", sum_elements(a, b, e));
-
-    double v;
-    printf("Найти: ");
-    scanf("%lf", &v);
-    printf("Позиция: %d\n", find_element(a, n, v));
-
-    double* a_copy = (double*)malloc(n * sizeof(double));
-    if (!a_copy) {
-        free(a);
-        return -1;
-    }
-    for (int i = 0; i < n; i++) a_copy[i] = a[i];
-
-    calc_elements(a_copy, n);
-    printf("После ceil: ");
-    put_elements(a_copy, n);
-
-    int t;
-    printf("Тип (0-чет/1-нечет): ");
-    scanf("%d", &t);
-    printf("Макс: %.2f\n", find_max_position_type(a, n, t));
-
-    printf("k для удаления: ");
-    scanf("%d", &k);
-
-    double* temp = (double*)malloc(n * sizeof(double));
-    if (!temp) {
-        free(a);
-        free(a_copy);
-        return -1;
-    }
-    for (int i = 0; i < n; i++) temp[i] = a[i];
-
-    int new_n = delete_every_kth(temp, n, k);
-    printf("После удаления (%d): ", new_n);
-    put_elements(temp, new_n);
-
-    printf("k для вставки -999: ");
-    scanf("%d", &k);
-
-    int current_size = n;
-    double* insert_arr = (double*)malloc(n * sizeof(double));
-    if (!insert_arr) {
-        free(a);
-        free(a_copy);
-        free(temp);
-        return -1;
-    }
-    for (int i = 0; i < n; i++) insert_arr[i] = a[i];
-
-    double* result_arr = insert_after_every_kth(insert_arr, &current_size, k);
-    printf("После вставки (%d): ", current_size);
-    put_elements(result_arr, current_size);
-
-    free(a);
-    free(a_copy);
-    free(temp);
-    free(result_arr);
-
-    return 0;
-}
+#endif
